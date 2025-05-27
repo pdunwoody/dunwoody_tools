@@ -1,0 +1,20 @@
+[project]
+name = "lifting_lug_check"
+version = "0.1.0"
+description = "A marimo app for evaluating lifting lugs."
+authors = [
+    { name = "Paul Dunwoody", email = "paul.dunwoody@norda.com" }
+]
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "marimo[recommended]>=0.13.11",
+    "pint",
+]
+
+[tool.setuptools]
+packages = []
+
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
