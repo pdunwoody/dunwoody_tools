@@ -1,19 +1,7 @@
 import marimo
 
-__generated_with = "0.13.11"
+__generated_with = "0.13.13"
 app = marimo.App(app_title="Lifting Lug Evaluation")
-
-
-@app.cell(hide_code=True)
-def _(mo):
-    mo.md(
-        r"""
-    # Lifting lug evaluation
-
-    Methodology from Rajendra - Design/Evaluation of Overhead Lifting Lugs.
-    """
-    )
-    return
 
 
 @app.cell
@@ -28,12 +16,6 @@ def _():
     return m, mo, os, u
 
 
-@app.cell(hide_code=True)
-def _(mo):
-    mo.md(r"""![image.png](attachment:image.png)""")
-    return
-
-
 @app.cell
 def _(mo):
     mo.md(r"""## Working Load Limit""")
@@ -43,15 +25,17 @@ def _(mo):
 @app.cell(hide_code=True)
 def _(mo):
     WLL_input = mo.ui.number(value=30000, label="WLL (lbf): ")
+    WLL_unit = mo.ui.dropdown(value="lbf", options=["lbf", "ton_force", "N", "kN", "metric_ton_force"])
 
-    WLL_input
-    return (WLL_input,)
+    mo.hstack([WLL_input, WLL_unit], justify="start")
+    return WLL_input, WLL_unit
 
 
 @app.cell
-def _(WLL_input, u):
+def _(WLL_input, WLL_unit, u):
     # Working Load Limit
-    WLL = WLL_input.value * u.lbf
+    WLL = u.Quantity(WLL_input.value, WLL_unit.value)
+    WLL
     return (WLL,)
 
 
@@ -64,29 +48,44 @@ def _(mo):
 @app.cell(hide_code=True)
 def _(mo):
     # Lug Dimensions
-    t_input = mo.ui.number(value=1.5, label="Thickness (inch): ")
-    w1_input = mo.ui.number(value=4.5, label="w1 (inch): ")
-    w2_input = mo.ui.number(value=4.5, label="w2 (inch): ")
-    h1_input = mo.ui.number(value=4.0, label="h1 (inch): ")
-    h2_input = mo.ui.number(value=4.0, label="h2 (inch): ")
-    d_input = mo.ui.number(value = 2.625, label="Hole diameter (inch): ")
-    d_pin_input = mo.ui.number(value = 2.5, label="Pin diameter (inch): ")
+    length_units=["inch", "mm", "ft", "m"]
+    t_input = mo.ui.number(value=1.5, label="Thickness: ")
+    t_unit = mo.ui.dropdown(value="inch", options=length_units)
+    w1_input = mo.ui.number(value=4.5, label="w1: ")
+    w1_unit = mo.ui.dropdown(value="inch", options=length_units)
+    w2_input = mo.ui.number(value=4.5, label="w2: ")
+    w2_unit = mo.ui.dropdown(value="inch", options=length_units)
+    h1_input = mo.ui.number(value=4.0, label="h1: ")
+    h1_unit = mo.ui.dropdown(value="inch", options=length_units)
+    h2_input = mo.ui.number(value=4.0, label="h2: ")
+    h2_unit = mo.ui.dropdown(value="inch", options=length_units)
+    d_input = mo.ui.number(value = 2.625, label="Hole diameter: ")
+    d_unit = mo.ui.dropdown(value="inch", options=length_units)
+    d_pin_input = mo.ui.number(value = 2.5, label="Pin diameter: ")
+    d_pin_unit = mo.ui.dropdown(value="inch", options=length_units)
 
-    mo.vstack([t_input, 
-               w1_input, 
-               w2_input, 
-               h1_input, 
-               h2_input, 
-               d_input, 
-               d_pin_input])
+    mo.vstack([mo.hstack([t_input, t_unit], justify="start"), 
+               mo.hstack([w1_input, w1_unit], justify="start"),
+               mo.hstack([w2_input, w2_unit], justify="start"),
+               mo.hstack([h1_input, h1_unit], justify="start"),
+               mo.hstack([h2_input, h2_unit], justify="start"),
+               mo.hstack([d_input, d_unit], justify="start"),
+               mo.hstack([d_pin_input, d_pin_unit], justify="start")], justify="center")
     return (
         d_input,
         d_pin_input,
+        d_pin_unit,
+        d_unit,
         h1_input,
+        h1_unit,
         h2_input,
+        h2_unit,
         t_input,
+        t_unit,
         w1_input,
+        w1_unit,
         w2_input,
+        w2_unit,
     )
 
 
@@ -94,20 +93,27 @@ def _(mo):
 def _(
     d_input,
     d_pin_input,
+    d_pin_unit,
+    d_unit,
     h1_input,
+    h1_unit,
     h2_input,
+    h2_unit,
     t_input,
+    t_unit,
     u,
     w1_input,
+    w1_unit,
     w2_input,
+    w2_unit,
 ):
-    t = t_input.value * u.inch
-    w1 = w1_input.value * u.inch  # Width
-    w2 = w2_input.value * u.inch
-    h1 = h1_input.value * u.inch  # Height
-    h2 = h2_input.value * u.inch
-    d = d_input.value * u.inch  # Hole Diameter
-    d_pin = d_pin_input.value * u.inch  # Pin Diameter
+    t = u.Quantity(t_input.value, t_unit.value)  # Thickness
+    w1 = u.Quantity(w1_input.value, w1_unit.value)  # Width
+    w2 = u.Quantity(w2_input.value, w2_unit.value)  # Width
+    h1 = u.Quantity(h1_input.value, h1_unit.value)  # Height
+    h2 = u.Quantity(h2_input.value, h2_unit.value)
+    d = u.Quantity(d_input.value, d_unit.value)  # Hole Diameter
+    d_pin = u.Quantity(d_pin_input.value, d_pin_unit.value)  # Pin Diameter
     return d, d_pin, h2, t, w1, w2
 
 
@@ -119,18 +125,22 @@ def _(mo):
 
 @app.cell(hide_code=True)
 def _(mo):
-    Fu_input = mo.ui.number(value=58, label="Fu (ksi): ")
-    Fy_input = mo.ui.number(value=36, label="Fy (ksi): ")
+    stress_units = ["ksi", "psi", "Pa", "MPa", "GPa"]
+    Fu_input = mo.ui.number(value=58, label="Ultimate Tensile Strength Fu: ")
+    Fu_unit = mo.ui.dropdown(value="ksi", options=stress_units)
+    Fy_input = mo.ui.number(value=36, label="Yield Strength Fy: ")
+    Fy_unit = mo.ui.dropdown(value="ksi", options=stress_units)
 
-    mo.vstack([Fu_input, Fy_input])
-    return Fu_input, Fy_input
+    mo.vstack([mo.hstack([Fu_input, Fu_unit], justify="start"),
+               mo.hstack([Fy_input, Fy_unit], justify="start")])
+    return Fu_input, Fu_unit, Fy_input, Fy_unit
 
 
 @app.cell(hide_code=True)
-def _(Fu_input, Fy_input, mo, u):
+def _(Fu_input, Fu_unit, Fy_input, Fy_unit, mo, u):
     # Material Properties - Assume A36 Steel
-    Fu = Fu_input.value * u.ksi
-    Fy = Fy_input.value * u.ksi
+    Fu = u.Quantity(Fu_input.value, Fu_unit.value)
+    Fy = u.Quantity(Fy_input.value, Fy_unit.value)
     Fa = min(Fu/5, Fy/3)
     mo.md(f"""
     Allowable Stress:
