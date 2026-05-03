@@ -7,6 +7,23 @@ from typing import List
 from pathlib import Path
 
 
+IFRAME_RESIZER_CHILD = (
+    '<script'
+    ' src="https://cdnjs.cloudflare.com/ajax/libs/iframe-resizer/4.3.9/iframeResizer.contentWindow.min.js"'
+    ' integrity="sha512-iJ2s57YPSyBMWQMHC5nEP2jMFLJF27LCBNVOqh+HyaWEsm9KUuZnWxw5f3u9YjDZeWpFgWDdNnZyggNDFEkA=="'
+    ' crossorigin="anonymous">'
+    '</script>'
+)
+
+
+def inject_iframe_resizer(html_path: str) -> None:
+    with open(html_path, "r") as f:
+        content = f.read()
+    content = content.replace("</body>", f"{IFRAME_RESIZER_CHILD}\n</body>")
+    with open(html_path, "w") as f:
+        f.write(content)
+
+
 def export_html_wasm(notebook_path: str, output_dir: str, as_app: bool = False) -> bool:
     """Export a single marimo notebook to HTML format.
 
@@ -29,6 +46,7 @@ def export_html_wasm(notebook_path: str, output_dir: str, as_app: bool = False) 
 
         cmd.extend([notebook_path, "-o", output_file])
         subprocess.run(cmd, capture_output=True, text=True, check=True)
+        inject_iframe_resizer(output_file)
         return True
     except subprocess.CalledProcessError as e:
         print(f"Error exporting {notebook_path}:")
