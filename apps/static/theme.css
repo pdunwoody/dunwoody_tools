@@ -1,6 +1,13 @@
 /* Load Inter from Google Fonts */
 @import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap');
 
+/* Allow iframe to auto-size to content rather than viewport height */
+html, body, #root {
+    height: auto !important;
+    min-height: unset !important;
+    overflow: visible !important;
+}
+
 /* Nord color scheme by Arctic Ice Studio: https://www.nordtheme.com/ */
 
 /* Font and Radius Variables */
