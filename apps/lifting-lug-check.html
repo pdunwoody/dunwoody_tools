@@ -1,0 +1,793 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Lifting Lug Evaluation – Dunwoody Engineering</title>
+  <link rel="stylesheet" href="static/theme.css" />
+  <style>
+    :root {
+      --card:   var(--nord2);  /* elevated above --background (nord0) */
+      --border: var(--nord3);  /* more visible than theme.css default (nord2) */
+      --gap:    1.25rem;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: var(--text-font);
+      background: var(--background);
+      color: var(--foreground);
+      font-size: 0.95rem;
+      line-height: 1.6;
+      padding: 1.5rem 1rem 3rem;
+    }
+
+    .container { max-width: 860px; margin: 0 auto; }
+
+    .calc-header {
+      border-left: 4px solid var(--accent);
+      padding-left: 1rem;
+      margin-bottom: 1.75rem;
+    }
+    .calc-header h1 {
+      font-size: 1.55rem;
+      font-weight: 700;
+      color: var(--nord6);
+      letter-spacing: 0.01em;
+    }
+    .calc-header .subtitle {
+      color: var(--nord9);
+      font-size: 0.88rem;
+      margin-top: 0.2rem;
+    }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: var(--gap);
+      margin-bottom: var(--gap);
+    }
+    .card-title {
+      font-size: 0.78rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--accent);
+      margin-bottom: 0.9rem;
+    }
+    .card-subtitle {
+      font-size: 0.78rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--nord9);
+      margin: 1.1rem 0 0.7rem;
+    }
+
+    .info-box {
+      border-left: 3px solid var(--nord9);
+      background: color-mix(in srgb, var(--nord10) 12%, var(--card));
+      font-size: 0.88rem;
+      color: var(--nord5);
+    }
+    .info-box p + p { margin-top: 0.5rem; }
+
+    details.collapsible summary {
+      cursor: pointer;
+      font-weight: 600;
+      color: var(--nord5);
+      list-style: none;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      user-select: none;
+    }
+    details.collapsible summary::before {
+      content: '▶';
+      font-size: 0.7rem;
+      color: var(--accent);
+      transition: transform 0.2s;
+      flex-shrink: 0;
+    }
+    details.collapsible[open] summary::before { transform: rotate(90deg); }
+    details.collapsible > *:not(summary) { margin-top: 0.9rem; }
+
+    .input-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: var(--gap);
+    }
+    .input-group { display: flex; flex-direction: column; gap: 0.3rem; }
+    .input-label { font-size: 0.83rem; font-weight: 600; color: var(--nord5); }
+    .unit { font-weight: 400; color: var(--nord9); }
+    .input-field {
+      background: var(--muted);
+      border: 1px solid var(--border);
+      border-radius: 5px;
+      color: var(--nord6);
+      font-family: var(--monospace-font);
+      font-size: 0.95rem;
+      padding: 0.45rem 0.65rem;
+      transition: border-color 0.15s, box-shadow 0.15s;
+      width: 100%;
+    }
+    .input-field:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 20%, transparent);
+    }
+    .input-hint { font-size: 0.75rem; color: var(--nord3); }
+
+    .diagram-wrap {
+      display: flex;
+      justify-content: center;
+      margin: 0.5rem 0 1rem;
+    }
+    .diagram-wrap svg { max-width: 100%; height: auto; }
+
+    .btn-calculate {
+      display: block;
+      width: 100%;
+      padding: 0.7rem 1rem;
+      margin-top: 0.25rem;
+      background: var(--nord10);
+      color: var(--nord6);
+      border: none;
+      border-radius: var(--radius);
+      font-size: 0.95rem;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      cursor: pointer;
+      transition: background 0.15s, transform 0.1s;
+    }
+    .btn-calculate:hover  { background: var(--accent); }
+    .btn-calculate:active { transform: scale(0.98); }
+
+    .results-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+      gap: 0.8rem;
+      margin-bottom: var(--gap);
+    }
+    .result-card {
+      background: var(--muted);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 0.7rem 0.85rem;
+    }
+    .result-label {
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--nord9);
+      margin-bottom: 0.15rem;
+    }
+    .result-value {
+      font-family: var(--monospace-font);
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--nord6);
+    }
+    .result-unit { font-size: 0.72rem; color: var(--nord3); }
+    .result-value.pass { color: var(--success); }
+    .result-value.warn { color: var(--action); }
+    .result-value.fail { color: var(--destructive); }
+
+    #status-badge {
+      display: none;
+      align-items: center;
+      gap: 0.6rem;
+      padding: 0.6rem 1rem;
+      border-radius: var(--radius);
+      font-weight: 700;
+      font-size: 0.9rem;
+      margin-bottom: var(--gap);
+    }
+    #status-badge.pass { display:flex; background:color-mix(in srgb,var(--success) 15%,var(--card));     color:var(--success);     border:1px solid var(--success); }
+    #status-badge.warn { display:flex; background:color-mix(in srgb,var(--action) 15%,var(--card));      color:var(--action);      border:1px solid var(--action); }
+    #status-badge.fail { display:flex; background:color-mix(in srgb,var(--destructive) 15%,var(--card)); color:var(--destructive); border:1px solid var(--destructive); }
+    #status-badge.info { display:flex; background:color-mix(in srgb,var(--ring) 15%,var(--card));        color:var(--ring);        border:1px solid var(--ring); }
+
+    .result-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.86rem;
+    }
+    .result-table th {
+      text-align: left;
+      padding: 0.4rem 0.65rem;
+      background: var(--muted);
+      color: var(--nord9);
+      font-size: 0.73rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      border-bottom: 1px solid var(--border);
+    }
+    .result-table td {
+      padding: 0.42rem 0.65rem;
+      border-bottom: 1px solid color-mix(in srgb, var(--border) 50%, transparent);
+      font-family: var(--monospace-font);
+    }
+    .result-table tr:last-child td { border-bottom: none; }
+    .result-table .pass { color: var(--success); font-weight: 700; }
+    .result-table .warn { color: var(--action); font-weight: 700; }
+    .result-table .fail { color: var(--destructive); font-weight: 700; }
+    .result-table td:first-child { font-family: var(--text-font); color: var(--nord5); }
+    .result-table td:nth-child(4) { font-family: var(--text-font); }
+
+    hr.divider { border: none; border-top: 1px solid var(--border); margin: var(--gap) 0; }
+
+    .disclaimer {
+      font-size: 0.78rem;
+      color: var(--nord3);
+      border-top: 1px solid var(--border);
+      padding-top: 0.75rem;
+      margin-top: 0.5rem;
+    }
+
+    .ref-list { font-size: 0.85rem; color: var(--nord5); padding-left: 1.2rem; }
+    .ref-list li { margin-bottom: 0.3rem; }
+
+    @media (max-width: 480px) {
+      body { padding: 1rem 0.6rem 2rem; }
+      .calc-header h1 { font-size: 1.25rem; }
+    }
+  </style>
+</head>
+
+<body>
+<div class="container">
+
+  <!-- HEADER -->
+  <div class="calc-header">
+    <h1>Lifting Lug Evaluation</h1>
+    <div class="subtitle">Method: Rajendra – Design/Evaluation of Overhead Lifting Lugs (PDHonline S106) · Dunwoody Engineering</div>
+  </div>
+
+  <!-- INFO -->
+  <div class="card info-box">
+    <p>Evaluates an overhead lifting lug for seven failure modes: tensile rupture across the pin hole,
+       bearing on the pin, shear tear-out, tensile block failure beyond the pin hole, out-of-plane
+       buckling (thickness check), weld shear/tension, and base material tension at the lug root.</p>
+    <p>Applied load <em>W</em> may be angled in-plane (α) and out-of-plane (β). The calculator reports
+       the allowable load for each failure mode and the governing (minimum) capacity.</p>
+  </div>
+
+  <!-- DIAGRAM -->
+  <div class="card">
+    <div class="card-title">Lug Geometry Reference</div>
+    <div class="diagram-wrap">
+      <!-- Annotated lifting lug SVG diagram -->
+      <svg viewBox="0 0 520 370" width="520" xmlns="http://www.w3.org/2000/svg"
+           style="font-family:'Segoe UI',sans-serif;">
+
+        <!-- Base plate (equipment wall) -->
+        <rect x="20" y="200" width="30" height="140" fill="#3B4252" stroke="#4C566A" stroke-width="1.5"/>
+        <line x1="20" y1="200" x2="50" y2="200" stroke="#4C566A" stroke-width="1"/>
+        <!-- Hatch on base -->
+        <clipPath id="hatch-clip"><rect x="20" y="200" width="30" height="140"/></clipPath>
+        <g clip-path="url(#hatch-clip)" stroke="#4C566A" stroke-width="1" opacity="0.6">
+          <line x1="10" y1="210" x2="60" y2="160"/><line x1="10" y1="230" x2="60" y2="180"/>
+          <line x1="10" y1="250" x2="60" y2="200"/><line x1="10" y1="270" x2="60" y2="220"/>
+          <line x1="10" y1="290" x2="60" y2="240"/><line x1="10" y1="310" x2="60" y2="260"/>
+          <line x1="10" y1="330" x2="60" y2="280"/><line x1="10" y1="350" x2="60" y2="300"/>
+        </g>
+
+        <!-- Weld symbol -->
+        <line x1="50" y1="200" x2="50" y2="340" stroke="#EBCB8B" stroke-width="3"/>
+        <text x="56" y="280" fill="#EBCB8B" font-size="10" font-weight="600">Weld</text>
+
+        <!-- Lug plate body -->
+        <rect x="50" y="220" width="55" height="110" fill="#434C5E" stroke="#81A1C1" stroke-width="1.5"/>
+
+        <!-- Lug top (semicircle) -->
+        <path d="M50,220 A27.5,50 0 0,1 105,220" fill="#434C5E" stroke="#81A1C1" stroke-width="1.5"/>
+
+        <!-- Pin hole -->
+        <circle cx="77.5" cy="195" r="18" fill="#2E3440" stroke="#88C0D0" stroke-width="1.5"/>
+        <circle cx="77.5" cy="195" r="3"  fill="#88C0D0"/>
+
+        <!-- Dimension: lug width w -->
+        <line x1="50" y1="352" x2="105" y2="352" stroke="#4C566A" stroke-width="1" marker-start="url(#arr)" marker-end="url(#arr)"/>
+        <text x="77.5" y="363" fill="#81A1C1" font-size="10" text-anchor="middle">w</text>
+        <line x1="50"  y1="340" x2="50"  y2="355" stroke="#4C566A" stroke-width="0.8"/>
+        <line x1="105" y1="340" x2="105" y2="355" stroke="#4C566A" stroke-width="0.8"/>
+
+        <!-- Dimension: thickness t (side label) -->
+        <text x="36" y="280" fill="#81A1C1" font-size="10" text-anchor="middle">t</text>
+
+        <!-- Dimension: lug height l (from base to pin center) -->
+        <line x1="118" y1="195" x2="118" y2="330" stroke="#4C566A" stroke-width="1"/>
+        <line x1="105" y1="195" x2="122" y2="195" stroke="#4C566A" stroke-width="0.8"/>
+        <line x1="105" y1="330" x2="122" y2="330" stroke="#4C566A" stroke-width="0.8"/>
+        <text x="126" y="268" fill="#81A1C1" font-size="10">l</text>
+
+        <!-- Dimension: a = dist from hole edge to lug edge (top) -->
+        <line x1="77.5" y1="177" x2="77.5" y2="155" stroke="#4C566A" stroke-width="0.8" stroke-dasharray="3,2"/>
+        <line x1="77.5" y1="155" x2="77.5" y2="140" stroke="#4C566A" stroke-width="1"/>
+        <line x1="66"   y1="177" x2="89"   y2="177" stroke="#4C566A" stroke-width="0.8" stroke-dasharray="3,2"/>
+        <text x="85" y="155" fill="#81A1C1" font-size="10">a</text>
+
+        <!-- Dimension: d = hole diameter -->
+        <line x1="59.5" y1="195" x2="95.5" y2="195" stroke="#88C0D0" stroke-width="1" stroke-dasharray="4,2"/>
+        <text x="77.5" y="190" fill="#88C0D0" font-size="10" text-anchor="middle">d</text>
+
+        <!-- Load arrow and angle annotations -->
+        <!-- Vertical component -->
+        <line x1="77.5" y1="110" x2="77.5" y2="177" stroke="#A3BE8C" stroke-width="2" marker-end="url(#arrG)"/>
+        <!-- Angled load W -->
+        <line x1="77.5" y1="110" x2="135"  y2="60"  stroke="#ECEFF4" stroke-width="2" marker-start="url(#arrW)" stroke-dasharray="5,3"/>
+        <text x="140" y="58" fill="#ECEFF4" font-size="12" font-weight="700">W</text>
+
+        <!-- Alpha angle arc -->
+        <path d="M77.5,110 A28,28 0 0,0 101,88" fill="none" stroke="#EBCB8B" stroke-width="1.2"/>
+        <text x="102" y="102" fill="#EBCB8B" font-size="11" font-style="italic">α</text>
+        <text x="115" y="118" fill="#EBCB8B" font-size="9">(in-plane)</text>
+
+        <!-- Collar plate dimensions -->
+        <rect x="42" y="212" width="71" height="8" fill="none" stroke="#B48EAD" stroke-width="1" stroke-dasharray="4,2"/>
+        <text x="120" y="220" fill="#B48EAD" font-size="9">collar plate (optional)</text>
+
+        <!-- tw weld label -->
+        <text x="22" y="196" fill="#EBCB8B" font-size="9">tw</text>
+
+        <!-- Right side: label block -->
+        <rect x="185" y="50" width="310" height="270" rx="6" fill="#3B4252" stroke="#4C566A" stroke-width="1"/>
+        <text x="200" y="74" fill="#88C0D0" font-size="11" font-weight="700">SYMBOL LEGEND</text>
+
+        <g fill="#D8DEE9" font-size="10.5">
+          <text x="200" y="100"><tspan fill="#81A1C1" font-weight="600">W</tspan>   Applied load (kip)</text>
+          <text x="200" y="118"><tspan fill="#81A1C1" font-weight="600">α</tspan>   In-plane angle from vertical (°)</text>
+          <text x="200" y="136"><tspan fill="#81A1C1" font-weight="600">β</tspan>   Out-of-plane angle (°)</text>
+          <text x="200" y="154"><tspan fill="#81A1C1" font-weight="600">d</tspan>   Pin hole diameter (in)</text>
+          <text x="200" y="172"><tspan fill="#81A1C1" font-weight="600">t</tspan>   Lug plate thickness (in)</text>
+          <text x="200" y="190"><tspan fill="#81A1C1" font-weight="600">w</tspan>   Lug width (in)</text>
+          <text x="200" y="208"><tspan fill="#81A1C1" font-weight="600">a</tspan>   Dist. hole centre → lug top edge (in)</text>
+          <text x="200" y="226"><tspan fill="#81A1C1" font-weight="600">l</tspan>   Dist. pin centre → lug base (in)</text>
+          <text x="200" y="244"><tspan fill="#81A1C1" font-weight="600">Lw</tspan>  Total weld length (in)</text>
+          <text x="200" y="262"><tspan fill="#81A1C1" font-weight="600">tw</tspan>  Weld throat size (in)</text>
+          <text x="200" y="280"><tspan fill="#81A1C1" font-weight="600">Fy</tspan>  Yield strength (ksi)</text>
+          <text x="200" y="298"><tspan fill="#81A1C1" font-weight="600">Fu</tspan>  Ultimate tensile strength (ksi)</text>
+        </g>
+
+        <!-- Arrow markers -->
+        <defs>
+          <marker id="arr"  markerWidth="6" markerHeight="6" refX="3" refY="3" orient="auto">
+            <path d="M0,0 L6,3 L0,6 Z" fill="#4C566A"/>
+          </marker>
+          <marker id="arrG" markerWidth="8" markerHeight="8" refX="4" refY="4" orient="auto">
+            <path d="M0,0 L8,4 L0,8 Z" fill="#A3BE8C"/>
+          </marker>
+          <marker id="arrW" markerWidth="8" markerHeight="8" refX="4" refY="4" orient="auto-start-reverse">
+            <path d="M0,0 L8,4 L0,8 Z" fill="#ECEFF4"/>
+          </marker>
+        </defs>
+      </svg>
+    </div>
+  </div>
+
+  <!-- INPUTS -->
+  <div class="card">
+    <div class="card-title">Inputs</div>
+
+    <div class="card-subtitle">Loading</div>
+    <div class="input-grid">
+      <div class="input-group">
+        <label class="input-label" for="W">Applied Load W <span class="unit">(kip)</span></label>
+        <input class="input-field" type="number" id="W" value="5" min="0.001" step="0.1"/>
+        <span class="input-hint">Total rigging load on this lug</span>
+      </div>
+      <div class="input-group">
+        <label class="input-label" for="alpha">In-plane angle α <span class="unit">(°)</span></label>
+        <input class="input-field" type="number" id="alpha" value="0" min="0" max="90" step="1"/>
+        <span class="input-hint">0° = vertical pull; max 90°</span>
+      </div>
+      <div class="input-group">
+        <label class="input-label" for="beta">Out-of-plane angle β <span class="unit">(°)</span></label>
+        <input class="input-field" type="number" id="beta" value="0" min="0" max="45" step="1"/>
+        <span class="input-hint">0° = in-plane only; max 45°</span>
+      </div>
+    </div>
+
+    <div class="card-subtitle">Lug Geometry</div>
+    <div class="input-grid">
+      <div class="input-group">
+        <label class="input-label" for="d">Pin hole diameter d <span class="unit">(in)</span></label>
+        <input class="input-field" type="number" id="d" value="1.25" min="0.1" step="0.0625"/>
+      </div>
+      <div class="input-group">
+        <label class="input-label" for="t">Lug thickness t <span class="unit">(in)</span></label>
+        <input class="input-field" type="number" id="t" value="1.25" min="0.125" step="0.0625"/>
+        <span class="input-hint">Min 0.5 in to prevent buckling</span>
+      </div>
+      <div class="input-group">
+        <label class="input-label" for="w">Lug width w <span class="unit">(in)</span></label>
+        <input class="input-field" type="number" id="w" value="4.5" min="0.1" step="0.0625"/>
+        <span class="input-hint">Full width at pin hole elevation</span>
+      </div>
+      <div class="input-group">
+        <label class="input-label" for="a">Edge distance a <span class="unit">(in)</span></label>
+        <input class="input-field" type="number" id="a" value="1.125" min="0.1" step="0.0625"/>
+        <span class="input-hint">Pin centre → top edge of lug</span>
+      </div>
+      <div class="input-group">
+        <label class="input-label" for="l">Pin height l <span class="unit">(in)</span></label>
+        <input class="input-field" type="number" id="l" value="3.5" min="0.1" step="0.0625"/>
+        <span class="input-hint">Pin centre → lug base</span>
+      </div>
+    </div>
+
+    <div class="card-subtitle">Weld</div>
+    <div class="input-grid">
+      <div class="input-group">
+        <label class="input-label" for="Lw">Total weld length Lw <span class="unit">(in)</span></label>
+        <input class="input-field" type="number" id="Lw" value="10" min="0.1" step="0.25"/>
+        <span class="input-hint">Both sides combined</span>
+      </div>
+      <div class="input-group">
+        <label class="input-label" for="tw">Weld throat tw <span class="unit">(in)</span></label>
+        <input class="input-field" type="number" id="tw" value="0.75" min="0.05" step="0.0625"/>
+        <span class="input-hint">Effective throat = 0.707 × fillet size</span>
+      </div>
+      <div class="input-group">
+        <label class="input-label" for="Fexx">Electrode strength FEXX <span class="unit">(ksi)</span></label>
+        <select class="input-field" id="Fexx">
+          <option value="60">E60XX — 60 ksi</option>
+          <option value="70" selected>E70XX — 70 ksi</option>
+          <option value="80">E80XX — 80 ksi</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="card-subtitle">Material</div>
+    <div class="input-grid">
+      <div class="input-group">
+        <label class="input-label" for="mat">Steel grade</label>
+        <select class="input-field" id="mat" onchange="updateMat()">
+          <option value="36,58">A36 — Fy=36, Fu=58 ksi</option>
+          <option value="50,65" selected>A572 Gr.50 — Fy=50, Fu=65 ksi</option>
+          <option value="50,70">A992 — Fy=50, Fu=70 ksi</option>
+          <option value="custom">Custom…</option>
+        </select>
+      </div>
+      <div class="input-group">
+        <label class="input-label" for="Fy">Yield strength Fy <span class="unit">(ksi)</span></label>
+        <input class="input-field" type="number" id="Fy" value="50" min="1" step="1"/>
+      </div>
+      <div class="input-group">
+        <label class="input-label" for="Fu">Ultimate strength Fu <span class="unit">(ksi)</span></label>
+        <input class="input-field" type="number" id="Fu" value="65" min="1" step="1"/>
+      </div>
+    </div>
+
+    <hr class="divider"/>
+    <button class="btn-calculate" onclick="calculate()">Calculate</button>
+  </div>
+
+  <!-- STATUS BADGE -->
+  <div id="status-badge"></div>
+
+  <!-- RESULTS -->
+  <div class="card" id="results-section" style="display:none;">
+    <div class="card-title">Results</div>
+
+    <div class="results-grid">
+      <div class="result-card">
+        <div class="result-label">Applied Load</div>
+        <div class="result-value" id="r-W">—</div>
+        <div class="result-unit">kip</div>
+      </div>
+      <div class="result-card">
+        <div class="result-label">Governing Capacity</div>
+        <div class="result-value" id="r-cap">—</div>
+        <div class="result-unit">kip</div>
+      </div>
+      <div class="result-card">
+        <div class="result-label">Overall F.O.S.</div>
+        <div class="result-value" id="r-fos">—</div>
+        <div class="result-unit">—</div>
+      </div>
+      <div class="result-card">
+        <div class="result-label">Governing Mode</div>
+        <div class="result-value" id="r-gov" style="font-size:0.95rem;">—</div>
+        <div class="result-unit">—</div>
+      </div>
+    </div>
+
+    <hr class="divider"/>
+
+    <table class="result-table">
+      <thead>
+        <tr>
+          <th>Failure Mode</th>
+          <th>Capacity (kip)</th>
+          <th>F.O.S.</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody id="result-tbody"></tbody>
+    </table>
+
+    <hr class="divider"/>
+
+    <!-- Geometry check results -->
+    <div class="card-title" style="margin-top:0.5rem;">Geometry Checks</div>
+    <table class="result-table">
+      <thead>
+        <tr><th>Rule</th><th>Required</th><th>Actual</th><th>Status</th></tr>
+      </thead>
+      <tbody id="geom-tbody"></tbody>
+    </table>
+
+    <hr class="divider"/>
+    <div class="disclaimer">
+      Results are for <strong>informational purposes only</strong> and must not be relied upon
+      as a definitive engineering analysis. Independent verification, manual calculation,
+      and engineering review are required before any design or safety decisions are made.
+      Use entirely at your own risk.
+    </div>
+  </div>
+
+  <!-- REFERENCE -->
+  <details class="card collapsible">
+    <summary>Failure Modes &amp; Method Summary</summary>
+    <div style="font-size:0.87rem; color:var(--nord5);">
+      <p style="margin-bottom:0.6rem;">
+        This calculator follows the method in <em>Rajendra – Design/Evaluation of Overhead Lifting Lugs</em>
+        (PDHonline Course S106). Seven failure modes are evaluated:
+      </p>
+      <ol style="padding-left:1.3rem; line-height:1.9;">
+        <li><strong>Tensile rupture across pin hole</strong> — net section at hole: Pw1 = 0.6·Fy·t·(w−d)</li>
+        <li><strong>Pin bearing</strong> — bearing on lug plate: Pw2 = 0.9·Fy·t·dpin, where dpin = d − 0.5 in</li>
+        <li><strong>Shear tear-out</strong> — double shear plane beyond hole: Pw3 = 0.4·Fu·t·2·a_eff</li>
+        <li><strong>Tensile block beyond hole</strong> — 0.8d block: Pw4 = 0.6·Fu·t·0.8·d</li>
+        <li><strong>Out-of-plane buckling</strong> — thickness check t ≥ 0.5 in (no load reduction)</li>
+        <li><strong>Weld</strong> — combined tension + bending on weld group (fillet): Pw6</li>
+        <li><strong>Base metal at lug root</strong> — tensile stress from axial + bending: Pw7</li>
+      </ol>
+      <p style="margin-top:0.7rem;">
+        Geometry Rule 1: a ≥ d/2 &nbsp;|&nbsp; Rule 2: d ≤ 1.25·a (otherwise a is reduced to a_eff = d/1.25)
+      </p>
+    </div>
+    <hr class="divider"/>
+    <ol class="ref-list">
+      <li>Rajendra, C. – <em>Design/Evaluation of Overhead Lifting Lugs</em>, PDHonline Course S106</li>
+      <li>ASME BTH-1-2014 – <em>Design of Below-the-Hook Lifting Devices</em></li>
+      <li>Blodgett, O. – <em>Design of Welded Structures</em>, 1966</li>
+      <li>ANSI N14.6 – <em>Special Lifting Devices for Shipping Containers ≥10,000 lb</em></li>
+    </ol>
+  </details>
+
+</div>
+
+<script>
+/* ── Material selector ───────────────────────────────────────────── */
+function updateMat() {
+  const v = document.getElementById('mat').value;
+  if (v === 'custom') return;
+  const [fy, fu] = v.split(',').map(Number);
+  document.getElementById('Fy').value = fy;
+  document.getElementById('Fu').value = fu;
+}
+
+/* ── Main calculation ────────────────────────────────────────────── */
+function calculate() {
+  // Read inputs
+  const W     = parseFloat(document.getElementById('W').value);
+  const alpha = parseFloat(document.getElementById('alpha').value) * Math.PI / 180;
+  const beta  = parseFloat(document.getElementById('beta').value)  * Math.PI / 180;
+  const d     = parseFloat(document.getElementById('d').value);
+  const t     = parseFloat(document.getElementById('t').value);
+  const w     = parseFloat(document.getElementById('w').value);
+  const a_in  = parseFloat(document.getElementById('a').value);
+  const l     = parseFloat(document.getElementById('l').value);
+  const Lw    = parseFloat(document.getElementById('Lw').value);
+  const tw    = parseFloat(document.getElementById('tw').value);
+  const Fexx  = parseFloat(document.getElementById('Fexx').value);
+  const Fy    = parseFloat(document.getElementById('Fy').value);
+  const Fu    = parseFloat(document.getElementById('Fu').value);
+
+  // Validation
+  const fields = [W, alpha*180/Math.PI, beta*180/Math.PI, d, t, w, a_in, l, Lw, tw, Fexx, Fy, Fu];
+  if (fields.some(v => isNaN(v) || v < 0)) {
+    setStatus('warn', 'Please ensure all inputs are valid positive numbers.');
+    return;
+  }
+  if (W <= 0 || d <= 0 || t <= 0 || w <= 0 || a_in <= 0 || l <= 0 || Lw <= 0 || tw <= 0) {
+    setStatus('warn', 'All geometry and load values must be greater than zero.');
+    return;
+  }
+
+  // ── Geometry checks ──────────────────────────────────────────────
+  const geomChecks = [];
+
+  // Rule 1: a >= d/2
+  const rule1Pass = a_in >= d / 2;
+  geomChecks.push({
+    rule: 'Rule 1: a ≥ d/2',
+    req:  fmt(d/2) + ' in',
+    act:  fmt(a_in) + ' in',
+    pass: rule1Pass
+  });
+
+  // Rule 2: d <= 1.25 * a  (if not, use a_eff = d/1.25)
+  const rule2Pass = d <= 1.25 * a_in;
+  const a_eff = rule2Pass ? a_in : d / 1.25;
+  geomChecks.push({
+    rule: 'Rule 2: d ≤ 1.25·a (else a reduced)',
+    req:  'd ≤ ' + fmt(1.25 * a_in) + ' in',
+    act:  fmt(d) + ' in' + (!rule2Pass ? ' → a_eff = ' + fmt(a_eff) + ' in' : ''),
+    pass: rule2Pass
+  });
+
+  // Thickness check (buckling): t >= 0.5
+  const buckPass = t >= 0.5;
+  geomChecks.push({
+    rule: 'Buckling: t ≥ 0.5 in',
+    req:  '0.50 in',
+    act:  fmt(t) + ' in',
+    pass: buckPass
+  });
+
+  // Pin clearance: d >= dpin + 0.5 (i.e. hole at least 0.5 in larger than pin)
+  const dpin = d - 0.5; // assumed per Rajendra
+  geomChecks.push({
+    rule: 'Pin clearance: d = dpin + 0.5 in',
+    req:  'hole = pin + 0.50 in',
+    act:  'dpin = ' + fmt(dpin) + ' in',
+    pass: dpin > 0
+  });
+
+  // ── Failure mode capacities ───────────────────────────────────────
+  // Pw1: Tensile rupture across pin hole
+  const Pw1 = 0.6 * Fy * t * (w - d);
+
+  // Pw2: Bearing on pin
+  const Pw2 = 0.9 * Fy * t * dpin;
+
+  // Pw3: Shear tear-out (double plane)
+  const Pw3 = 0.4 * Fu * t * 2 * a_eff;
+
+  // Pw4: Tensile block beyond hole
+  const Pw4 = 0.6 * Fu * t * 0.8 * d;
+
+  // Pw5: Buckling — no capacity reduction if t >= 0.5; otherwise flag
+  const Pw5 = buckPass ? Infinity : 0; // reported via geom check
+
+  // Pw6: Weld capacity
+  // Section modulus of weld group (two vertical lines of length ~l each side)
+  // Treat as rectangular weld group: Lw total length, Sw = tw * Lw^2 / 6 (approx, weak axis)
+  // More precisely per Rajendra: unit weld analysis
+  // Axial (vertical) component of W
+  const Wv = W * Math.cos(alpha);  // vertical
+  const Wh = W * Math.sin(alpha);  // horizontal in-plane
+  const Wo = W * Math.sin(beta);   // out-of-plane
+
+  // Weld group section properties (rectangular, full perimeter approximation not used;
+  // Rajendra uses 2 vertical fillets of length l on either side of lug)
+  // Sw_strong = tw * l^2 / 3  (bending about weak axis of weld group — in-plane moment)
+  // Sw_weak   = tw * w * l    (out-of-plane bending, simplified)
+  const Sw_strong = tw * l * l / 3;
+  const Sw_weak   = tw * w * l;
+
+  // Unit forces on weld (per unit throat area)
+  const faxial  = Wv / (tw * Lw);           // direct tension
+  const fbend_s = (Wh * l) / Sw_strong;     // strong-axis bending stress
+  const fbend_w = (Wo * l) / Sw_weak;       // weak-axis bending stress
+
+  // Combined stress (SRSS for bending components + axial)
+  const f_weld_total = Math.sqrt(
+    Math.pow(faxial + fbend_w, 2) + Math.pow(fbend_s, 2)
+  );
+
+  // Allowable weld stress = 0.3 * Fexx
+  const f_weld_allow = 0.3 * Fexx;
+  // Capacity = allowable * throat * weld length
+  const Pw6 = (f_weld_total > 0) ? (f_weld_allow * tw * Lw * W) / (f_weld_total * tw * Lw) : 999;
+  // Simplified: Pw6 = W * (f_weld_allow / f_weld_total)
+  const Pw6_final = (f_weld_total > 0) ? W * (f_weld_allow / f_weld_total) : 999;
+
+  // Pw7: Base metal at lug root (tensile)
+  // Net section at base of lug: A = t * w (full width)
+  // Stress = Wv/(t*w) + Mstrong/(t*w^2/6) + Mweak/((w*t^2)/6)
+  const f_base_ax   = Wv / (t * w);
+  const f_base_bend = (Wh * l) / (t * w * w / 6);
+  const f_base_oop  = (Wo * l) / (w * t * t / 6);
+  const f_base_total = f_base_ax + f_base_bend + f_base_oop;
+  const f_base_allow = 0.6 * Fy;
+  const Pw7 = (f_base_total > 0) ? W * (f_base_allow / f_base_total) : 999;
+
+  // ── Gather all finite capacities ─────────────────────────────────
+  const modes = [
+    { name: 'Pw1 — Tensile rupture across hole', cap: Pw1 },
+    { name: 'Pw2 — Pin bearing',                 cap: Pw2 },
+    { name: 'Pw3 — Shear tear-out',              cap: Pw3 },
+    { name: 'Pw4 — Tensile block beyond hole',   cap: Pw4 },
+    { name: 'Pw6 — Weld',                        cap: Pw6_final },
+    { name: 'Pw7 — Base metal tension',          cap: Pw7 },
+  ];
+  if (!buckPass) {
+    modes.push({ name: 'Pw5 — Buckling (thickness)', cap: 0 });
+  }
+
+  const governing = modes.reduce((min, m) => m.cap < min.cap ? m : min, modes[0]);
+  const fos_overall = governing.cap / W;
+
+  // ── Build output rows ─────────────────────────────────────────────
+  const rows = modes.map(m => {
+    const fos  = m.cap / W;
+    const pass = m.cap >= W;
+    return { name: m.name, cap: m.cap, fos, pass };
+  });
+
+  // ── Write summary cards ───────────────────────────────────────────
+  document.getElementById('r-W').textContent   = fmt(W);
+  document.getElementById('r-cap').textContent = fmt(governing.cap);
+
+  const fosEl = document.getElementById('r-fos');
+  fosEl.textContent = fos_overall.toFixed(2);
+  fosEl.className   = 'result-value ' + fosClass(fos_overall);
+
+  const govEl = document.getElementById('r-gov');
+  govEl.textContent = governing.name.replace(/Pw\d+ — /, '');
+  govEl.className   = 'result-value ' + (fos_overall >= 1 ? 'pass' : 'fail');
+
+  // ── Build capacity table ──────────────────────────────────────────
+  const tbody = document.getElementById('result-tbody');
+  tbody.innerHTML = rows.map(r => `
+    <tr>
+      <td>${r.name}</td>
+      <td>${isFinite(r.cap) ? fmt(r.cap) : '—'}</td>
+      <td class="${fosClass(r.fos)}">${isFinite(r.fos) ? r.fos.toFixed(2) : '—'}</td>
+      <td class="${r.pass ? 'pass' : 'fail'}">${r.pass ? '✓ PASS' : '✗ FAIL'}</td>
+    </tr>`).join('');
+
+  // ── Build geometry table ──────────────────────────────────────────
+  const gtbody = document.getElementById('geom-tbody');
+  gtbody.innerHTML = geomChecks.map(g => `
+    <tr>
+      <td style="font-family:var(--font)">${g.rule}</td>
+      <td>${g.req}</td>
+      <td>${g.act}</td>
+      <td class="${g.pass ? 'pass' : 'warn'}">${g.pass ? '✓' : '⚠ Note'}</td>
+    </tr>`).join('');
+
+  // ── Overall status ────────────────────────────────────────────────
+  const allPass = rows.every(r => r.pass);
+  const geomWarn = geomChecks.some(g => !g.pass);
+
+  let statusType, statusMsg;
+  if (!allPass) {
+    statusType = 'fail';
+    statusMsg  = '✗  One or more capacity checks FAIL — lug is inadequate for the applied load.';
+  } else if (geomWarn) {
+    statusType = 'warn';
+    statusMsg  = '⚠  Capacity checks PASS but geometry rules not fully satisfied — review notes.';
+  } else {
+    statusType = 'pass';
+    statusMsg  = '✓  All capacity and geometry checks PASS.';
+  }
+  setStatus(statusType, statusMsg);
+
+  document.getElementById('results-section').style.display = '';
+}
+
+/* ── Helpers ─────────────────────────────────────────────────────── */
+function fmt(v) { return isFinite(v) ? (+v.toFixed(3)).toString() : '—'; }
+
+function fosClass(fos) {
+  if (!isFinite(fos)) return '';
+  return fos >= 2 ? 'pass' : fos >= 1 ? 'warn' : 'fail';
+}
+
+function setStatus(type, msg) {
+  const el = document.getElementById('status-badge');
+  el.className = type;
+  el.innerHTML = `<span>${msg}</span>`;
+}
+</script>
+</body>
+</html>
