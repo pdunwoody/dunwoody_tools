@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import os
+import shutil
 import subprocess
 import argparse
 from typing import List
@@ -120,12 +121,33 @@ def generate_index(all_notebooks: List[str], output_dir: str) -> None:
         print(f"Error generating index.html: {e}")
 
 
+def copy_html_tools(output_dir: str) -> None:
+    """Copy plain HTML tools and their static assets to _site."""
+    apps_src = Path("apps")
+    apps_dst = Path(output_dir) / "apps"
+
+    for html_file in apps_src.glob("*.html"):
+        apps_dst.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(html_file, apps_dst / html_file.name)
+        print(f"Copied {html_file} → {apps_dst / html_file.name}")
+
+    static_src = apps_src / "static"
+    if static_src.exists():
+        static_dst = apps_dst / "static"
+        if static_dst.exists():
+            shutil.rmtree(static_dst)
+        shutil.copytree(static_src, static_dst)
+        print(f"Copied {static_src} → {static_dst}")
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description="Build marimo notebooks")
     parser.add_argument(
         "--output-dir", default="_site", help="Output directory for built files"
     )
     args = parser.parse_args()
+
+    copy_html_tools(args.output_dir)
 
     all_notebooks: List[str] = []
     for directory in ["notebooks", "apps"]:

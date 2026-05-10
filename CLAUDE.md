@@ -112,7 +112,7 @@ All new HTML tools use the **Nord colour palette** and a shared set of CSS varia
 
 | File | Description | Method/Reference | Status |
 |---|---|---|---|
-| `apps/lifting_lug_check.html` | Overhead lifting lug evaluation | Rajendra – PDHonline S106 | ✅ Live |
+| `apps/lifting-lug-check.html` | Overhead lifting lug evaluation | Rajendra – PDHonline S106 | ✅ Live |
 | `apps/de-calculator-template.html` | Blank starter template | — | ✅ Template |
 
 *(Add new tools here as they are created)*
