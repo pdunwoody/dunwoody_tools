@@ -1,0 +1,235 @@
+/* Shared component styles for Dunwoody Engineering calculators.
+   Requires: theme.css (Nord palette, font vars, --radius) loaded before this file. */
+
+:root {
+  --card:   var(--nord2);  /* elevated above --background (nord0) */
+  --border: var(--nord3);  /* more visible than theme.css default (nord2) */
+  --gap:    1.25rem;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: var(--text-font);
+  background: var(--background);
+  color: var(--foreground);
+  font-size: 0.95rem;
+  line-height: 1.6;
+  padding: 1.5rem 1rem 3rem;
+}
+
+.container { max-width: 860px; margin: 0 auto; }
+
+/* ── Header ──────────────────────────────────────────────────────── */
+.calc-header {
+  border-left: 4px solid var(--accent);
+  padding-left: 1rem;
+  margin-bottom: 1.75rem;
+}
+.calc-header h1 {
+  font-size: 1.55rem;
+  font-weight: 700;
+  color: var(--nord6);
+  letter-spacing: 0.01em;
+}
+.calc-header .subtitle {
+  color: var(--nord9);
+  font-size: 0.88rem;
+  margin-top: 0.2rem;
+}
+
+/* ── Cards ───────────────────────────────────────────────────────── */
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: var(--gap);
+  margin-bottom: var(--gap);
+}
+.card-title {
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--accent);
+  margin-bottom: 0.9rem;
+}
+.card-subtitle {
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--nord9);
+  margin: 1.1rem 0 0.7rem;
+}
+
+/* ── Info box ────────────────────────────────────────────────────── */
+.info-box {
+  border-left: 3px solid var(--nord9);
+  background: color-mix(in srgb, var(--nord10) 12%, var(--card));
+  font-size: 0.88rem;
+  color: var(--nord5);
+}
+.info-box p + p { margin-top: 0.5rem; }
+
+/* ── Collapsible ─────────────────────────────────────────────────── */
+details.collapsible summary {
+  cursor: pointer;
+  font-weight: 600;
+  color: var(--nord5);
+  list-style: none;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  user-select: none;
+}
+details.collapsible summary::before {
+  content: '▶';
+  font-size: 0.7rem;
+  color: var(--accent);
+  transition: transform 0.2s;
+  flex-shrink: 0;
+}
+details.collapsible[open] summary::before { transform: rotate(90deg); }
+details.collapsible > *:not(summary) { margin-top: 0.9rem; }
+
+/* ── Inputs ──────────────────────────────────────────────────────── */
+.input-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: var(--gap);
+}
+.input-group { display: flex; flex-direction: column; gap: 0.3rem; }
+.input-label { font-size: 0.83rem; font-weight: 600; color: var(--nord5); }
+.unit { font-weight: 400; color: var(--nord9); }
+.input-field {
+  background: var(--muted);
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  color: var(--nord6);
+  font-family: var(--monospace-font);
+  font-size: 0.95rem;
+  padding: 0.45rem 0.65rem;
+  transition: border-color 0.15s, box-shadow 0.15s;
+  width: 100%;
+}
+.input-field:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 20%, transparent);
+}
+.input-field:invalid { border-color: var(--destructive); }
+.input-hint { font-size: 0.75rem; color: var(--nord3); }
+
+/* ── Calculate button ────────────────────────────────────────────── */
+.btn-calculate {
+  display: block;
+  width: 100%;
+  padding: 0.7rem 1rem;
+  margin-top: 0.25rem;
+  background: var(--nord10);
+  color: var(--nord6);
+  border: none;
+  border-radius: var(--radius);
+  font-size: 0.95rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  transition: background 0.15s, transform 0.1s;
+}
+.btn-calculate:hover { background: var(--accent); }
+.btn-calculate:active { transform: scale(0.98); }
+
+/* ── Results grid ────────────────────────────────────────────────── */
+.results-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 0.85rem;
+}
+.result-card {
+  background: var(--muted);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 0.75rem 0.9rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+.result-label {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--nord9);
+  margin-bottom: 0.15rem;
+}
+.result-value {
+  font-family: var(--monospace-font);
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--nord6);
+}
+.result-unit { font-size: 0.75rem; color: var(--nord3); }
+.result-value.pass { color: var(--success); }
+.result-value.warn { color: var(--action); }
+.result-value.fail { color: var(--destructive); }
+
+/* ── Status badge ────────────────────────────────────────────────── */
+#status-badge {
+  display: none;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.6rem 1rem;
+  border-radius: var(--radius);
+  font-weight: 700;
+  font-size: 0.9rem;
+  margin-bottom: var(--gap);
+}
+#status-badge.pass { display:flex; background:color-mix(in srgb,var(--success) 15%,var(--card));     color:var(--success);     border:1px solid var(--success); }
+#status-badge.warn { display:flex; background:color-mix(in srgb,var(--action) 15%,var(--card));      color:var(--action);      border:1px solid var(--action); }
+#status-badge.fail { display:flex; background:color-mix(in srgb,var(--destructive) 15%,var(--card)); color:var(--destructive); border:1px solid var(--destructive); }
+#status-badge.info { display:flex; background:color-mix(in srgb,var(--ring) 15%,var(--card));        color:var(--ring);        border:1px solid var(--ring); }
+
+/* ── Results table ───────────────────────────────────────────────── */
+.result-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.88rem;
+}
+.result-table th {
+  text-align: left;
+  padding: 0.4rem 0.65rem;
+  background: var(--muted);
+  color: var(--nord9);
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  border-bottom: 1px solid var(--border);
+}
+.result-table td {
+  padding: 0.42rem 0.65rem;
+  border-bottom: 1px solid color-mix(in srgb, var(--border) 50%, transparent);
+  font-family: var(--monospace-font);
+}
+.result-table tr:last-child td { border-bottom: none; }
+.result-table .pass { color: var(--success); font-weight: 700; }
+.result-table .warn { color: var(--action); font-weight: 700; }
+.result-table .fail { color: var(--destructive); font-weight: 700; }
+.result-table td:first-child { font-family: var(--text-font); color: var(--nord5); }
+.result-table td:nth-child(4) { font-family: var(--text-font); }
+
+/* ── Misc ────────────────────────────────────────────────────────── */
+hr.divider { border: none; border-top: 1px solid var(--border); margin: var(--gap) 0; }
+
+.disclaimer {
+  font-size: 0.78rem;
+  color: var(--nord3);
+  border-top: 1px solid var(--border);
+  padding-top: 0.75rem;
+  margin-top: 0.5rem;
+}
+
+@media (max-width: 480px) {
+  body { padding: 1rem 0.6rem 2rem; }
+  .calc-header h1 { font-size: 1.25rem; }
+}

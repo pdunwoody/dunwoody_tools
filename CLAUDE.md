@@ -18,13 +18,17 @@ The project is in active transition:
 
 ```
 dunwoody_tools/
-├── apps/                   # All calculator tools (Marimo .py and new .html)
-│   └── lifting_lug_check.html   # First HTML tool (replaces Marimo version)
-├── scripts/                # Build/utility scripts
-├── .devcontainer/          # VS Code Dev Container config (Python + Marimo)
-├── .github/workflows/      # GitHub Actions (GitHub Pages deployment)
-├── pyproject.toml          # Python dependencies for Marimo tools
-├── CLAUDE.md               # This file
+├── apps/                          # All calculator tools (Marimo .py and new .html)
+│   ├── static/
+│   │   ├── theme.css              # Nord colour palette, font vars, semantic tokens
+│   │   └── calculator.css         # Shared component styles for all HTML tools
+│   ├── lifting-lug-check.html     # Lifting lug evaluation tool
+│   └── de-calculator-template.html  # Blank starter template
+├── scripts/                       # Build/utility scripts
+├── .devcontainer/                 # VS Code Dev Container config (Python + Marimo)
+├── .github/workflows/             # GitHub Actions (GitHub Pages deployment)
+├── pyproject.toml                 # Python dependencies for Marimo tools
+├── CLAUDE.md                      # This file
 └── README.md
 ```
 
@@ -55,38 +59,43 @@ dunwoody_tools/
 
 ## Design System
 
-All new HTML tools use the **Nord colour palette** and a shared set of CSS variables and component classes. The canonical template is `apps/de-calculator-template.html`.
+All new HTML tools use the **Nord colour palette** and a shared CSS stack. The canonical template is `apps/de-calculator-template.html`.
 
-### Nord CSS Variables
-```css
---nord0: #2E3440   /* darkest background */
---nord1: #3B4252   /* elevated surface   */
---nord2: #434C5E   /* card background    */
---nord3: #4C566A   /* borders / muted    */
---nord4: #D8DEE9   /* body text          */
---nord6: #ECEFF4   /* bright text        */
---nord8: #88C0D0   /* accent (light blue)*/
---nord10: #5E81AC  /* accent dim         */
---nord14: #A3BE8C  /* pass / green       */
---nord13: #EBCB8B  /* warn / yellow      */
---nord11: #BF616A  /* fail / red         */
+### CSS files
+
+Every tool links both shared stylesheets in `<head>`, in this order:
+```html
+<link rel="stylesheet" href="static/theme.css" />
+<link rel="stylesheet" href="static/calculator.css" />
 ```
 
-### Key component classes
+| File | Purpose |
+|---|---|
+| `apps/static/theme.css` | Nord palette (`--nord0`–`--nord15`), font variables (`--text-font`, `--monospace-font`), semantic tokens (`--background`, `--foreground`, `--accent`, `--success`, `--destructive`, `--action`, `--ring`, `--radius`, etc.) |
+| `apps/static/calculator.css` | All shared component styles: layout, cards, inputs, button, results grid, status badge, result table, divider, disclaimer. Also overrides `--card`, `--border`, and `--gap` to calculator-appropriate values. |
+
+Tool-specific styles (e.g. a diagram wrapper, a custom list) go in a `<style>` block in the tool file itself. Most tools need no local styles at all.
+
+### Key component classes (from `calculator.css`)
 | Class | Purpose |
 |---|---|
-| `.card` | Rounded dark card container |
+| `.calc-header` | Left-accented page header with `h1` and `.subtitle` |
+| `.card` | Rounded card container |
 | `.card-title` | Uppercase accent-coloured section label |
+| `.card-subtitle` | Uppercase muted sub-section label |
+| `.info-box` | Tinted informational card |
+| `details.collapsible` | Expandable reference/notes section |
 | `.input-grid` | Responsive grid for input fields |
 | `.input-group` | Label + input + hint stacked vertically |
 | `.input-field` | Styled `<input>` or `<select>` |
 | `.btn-calculate` | Full-width calculate button |
 | `.results-grid` | Responsive grid for result cards |
 | `.result-card` | Single result display (label / value / unit) |
+| `.result-value.pass/warn/fail` | Colour-coded result value |
 | `.result-table` | Tabular breakdown with pass/warn/fail colouring |
 | `#status-badge` | Coloured overall pass/warn/fail banner |
-| `.info-box` | Tinted informational card |
-| `details.collapsible` | Expandable reference/notes section |
+| `hr.divider` | Horizontal rule within a card |
+| `.disclaimer` | Small-print disclaimer block |
 
 ### JS helpers (in every tool)
 - `setStatus(type, msg)` — drives the status badge; type = `'pass'|'warn'|'fail'|'info'`
@@ -102,9 +111,10 @@ All new HTML tools use the **Nord colour palette** and a shared set of CSS varia
 3. Replace the input section with your fields using `.input-group` pattern
 4. Replace the output section with your result cards
 5. Write your `calculate()` function — keep all maths in JS
-6. Push to `main`; GitHub Actions deploys to Pages automatically
-7. Add a WordPress page on dunwoodyengineering.com embedding the tool via iframe
-8. Update this file to add the tool to the inventory below
+6. Add a `<style>` block only if the tool needs styles beyond what `calculator.css` provides
+7. Push to `main`; GitHub Actions deploys to Pages automatically
+8. Add a WordPress page on dunwoodyengineering.com embedding the tool via iframe
+9. Update this file to add the tool to the inventory below
 
 ---
 
